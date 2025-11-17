@@ -78,11 +78,11 @@ WSGI_APPLICATION = 'payment_service.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'pay_db',
-        'USER': 'postgres',
-        'PASSWORD': 'ftk.kill',
-        'HOST': 'localhost',
-        'PORT': '5433',
+        'NAME': '',
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': '',
+        'PORT': '',
     }
 }
 
