@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Платежи</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+
+    #chart-container {
+      width: 1400px;
+      height: 700px;
+      margin-left: 0;
+      border: 1px solid #ccc;
+      padding: 10px;
+    }
+
+    #toggleChart {
+      margin-bottom: 10px;
+      padding: 6px 12px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Платежи</h1>
+  <button id="toggleChart">Показать гистограмму</button>
+
+  <div id="chart-container">
+    <canvas id="paymentsChart"></canvas>
+  </div>
+
+<script>
+let scatterData = [];
+let barLabels = [];
+let barValues = [];
+let chart = null;
+let currentIsScatter = true;
+
+async function fetchData() {
+  const resp = await fetch("{% url 'pay_service:payments_api' %}");
+  const data = await resp.json();
+  scatterData = data.scatter.map(s => ({ x: new Date(s.x), y: s.y, payer_name: s.payer_name }));
+  barLabels = data.bars.labels;
+  barValues = data.bars.values;
+}
+
+function createScatter(ctx){
+  return new Chart(ctx, {
+    type: 'scatter',
+    data: { datasets: [{ label: 'Сумма платежа', data: scatterData }] },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: { type: 'time', title: { display: true, text: 'Дата' } },
+        y: { title: { display: true, text: 'Сумма' } }
+      },
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: ctx => `${ctx.raw.payer_name}: ${ctx.raw.y}`
+          }
+        }
+      }
+    }
+  });
+}
+
+function createBar(ctx){
+  return new Chart(ctx, {
+    type: 'bar',
+    data: { labels: barLabels, datasets: [{ label: 'Сумма по плательщику', data: barValues }] },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: { title: { display: true, text: 'Плательщик' }, ticks: { autoSkip: false } },
+        y: { title: { display: true, text: 'Сумма' } }
+      }
+    }
+  });
+}
+
+async function init(){
+  await fetchData();
+  const ctx = document.getElementById('paymentsChart').getContext('2d');
+  chart = createScatter(ctx);
+
+  document.getElementById('toggleChart').onclick = () => {
+    currentIsScatter = !currentIsScatter;
+    chart.destroy();
+    chart = currentIsScatter ? createScatter(ctx) : createBar(ctx);
+    document.getElementById('toggleChart').innerText = currentIsScatter ? "Показать гистограмму" : "Показать график";
+  }
+}
+
+// Запуск
+init();
+</script>
+</body>
+</html>
