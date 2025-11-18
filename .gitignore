@@ -1,16 +1,16 @@
-# Env files
+# Env файлы.
 .env
 *.env
 
-# Виртуальное окружение
+# Виртуальное окружение.
 venv/
 payment_service1/venv/
 
-# Кэш Python
+# Кэш Python.
 __pycache__/
 *.pyc
 *.pyo
 
-# IDE
+# IDE.
 *.idea/
 *.vscode/
